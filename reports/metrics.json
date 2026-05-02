@@ -1,0 +1,7 @@
+{
+  "status": "code_ready_dataset_required",
+  "dataset": "Netflix Prize style ratings data",
+  "expected_columns": ["user_id", "movie_id", "rating"],
+  "metrics": ["rmse", "mae"],
+  "note": "Run src/train_recommender.py with the dataset locally to generate final metrics."
+}
