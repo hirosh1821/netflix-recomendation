@@ -1,0 +1,16 @@
+user_id,movie_id,rating
+u1,m1,5
+u1,m2,4
+u1,m3,1
+u2,m1,4
+u2,m2,5
+u2,m4,1
+u3,m2,4
+u3,m3,5
+u3,m5,2
+u4,m1,1
+u4,m4,5
+u4,m5,4
+u5,m3,4
+u5,m4,5
+u5,m5,3

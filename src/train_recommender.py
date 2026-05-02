@@ -2,6 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
@@ -42,6 +43,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ratings", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path("reports/metrics.json"))
+    parser.add_argument("--artifacts-dir", type=Path, default=Path("models"))
     parser.add_argument("--components", type=int, default=80)
     parser.add_argument("--test-size", type=float, default=0.2)
     args = parser.parse_args()
@@ -54,7 +56,8 @@ def main():
     train_centered = train.assign(rating=train["rating"] - global_mean)
     matrix = build_matrix(train_centered, len(users), len(movies))
 
-    svd = TruncatedSVD(n_components=args.components, random_state=42)
+    max_components = max(1, min(args.components, min(matrix.shape) - 1))
+    svd = TruncatedSVD(n_components=max_components, random_state=42)
     user_factors = svd.fit_transform(matrix)
     movie_factors = svd.components_.T
 
@@ -64,13 +67,21 @@ def main():
         "rows": int(len(ratings)),
         "users": int(len(users)),
         "movies": int(len(movies)),
-        "components": int(args.components),
-        "rmse": float(mean_squared_error(y_true, preds, squared=False)),
+        "components": int(max_components),
+        "rmse": float(np.sqrt(mean_squared_error(y_true, preds))),
         "mae": float(mean_absolute_error(y_true, preds)),
     }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.artifacts_dir.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    np.savez_compressed(
+        args.artifacts_dir / "svd_factors.npz",
+        user_factors=user_factors,
+        movie_factors=movie_factors,
+        global_mean=np.array([global_mean]),
+    )
+    joblib.dump({"users": users, "movies": movies}, args.artifacts_dir / "id_mappings.joblib")
     print(json.dumps(metrics, indent=2))
 
 

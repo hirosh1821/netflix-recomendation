@@ -40,6 +40,7 @@ data/ratings.csv
 ```bash
 pip install -r requirements.txt
 python src/train_recommender.py --ratings data/ratings.csv --output reports/metrics.json
+python src/recommend.py --user-id u1 --top-k 5
 ```
 
 ## Resume-ready summary
